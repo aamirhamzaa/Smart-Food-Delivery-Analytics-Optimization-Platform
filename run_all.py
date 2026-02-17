@@ -3,15 +3,16 @@ import sys
 import time
 
 scripts = [
-    ("notebooks/generate_data.py", "Generating Dataset"),
-    ("notebooks/setup_hive.py", "Setting Up Hive Metastore & Tables"),
-    ("notebooks/hive_processing.py", "Running Hive-Equivalent Queries"),
-    ("notebooks/analytics.py", "Computing Business Metrics"),
-    ("notebooks/visualizations.py", "Creating Statistical Charts"),
-    ("notebooks/geospatial.py", "Building Geospatial Maps"),
-    ("notebooks/dashboard.py", "Building Executive Dashboard"),
-    ("notebooks/predictive_model.py", "Training Predictive Models"),
-    ("notebooks/generate_report.py", "Generating Final Report"),
+    ("notebooks/generate_data.py",     "Generating Dataset"),
+    ("notebooks/setup_hive.py",        "Setting Up Hive Metastore & Tables"),
+    ("notebooks/hive_processing.py",   "Running Hive-Equivalent Queries"),
+    ("notebooks/analytics.py",         "Computing Business Metrics"),
+    ("notebooks/visualizations.py",    "Creating Statistical Charts"),
+    ("notebooks/geospatial.py",        "Building Geospatial Maps"),
+    ("notebooks/dashboard.py",         "Building Executive Dashboard"),
+    ("notebooks/predictive_model.py",  "Training Predictive Models"),
+    ("notebooks/generate_report.py",   "Generating Final Report"),
+    ("notebooks/build_viewer.py",      "Building Interactive Viewer"),
 ]
 
 print("=" * 60)
@@ -45,3 +46,4 @@ print("  Maps:      output/maps/*.html")
 print("  Dashboard: output/reports/executive_dashboard.html")
 print("  Report:    output/reports/final_report.txt")
 print("  Data:      output/reports/*.csv")
+print("  Viewer:    output/viewer.html  ← open this in a browser")
