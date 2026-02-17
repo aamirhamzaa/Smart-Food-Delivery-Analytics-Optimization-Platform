@@ -1,0 +1,3001 @@
+<!DOCTYPE html>
+<html lang="en" data-theme="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fast Food Delivery Analytics Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <style>
+        /* ============================================
+           CSS CUSTOM PROPERTIES & THEMING
+           ============================================ */
+        :root {
+            /* Spacing Scale */
+            --space-xs: 4px;
+            --space-sm: 8px;
+            --space-md: 16px;
+            --space-lg: 24px;
+            --space-xl: 32px;
+            --space-2xl: 48px;
+            --space-3xl: 64px;
+
+            /* Border Radius */
+            --radius-sm: 8px;
+            --radius-md: 12px;
+            --radius-lg: 16px;
+            --radius-xl: 24px;
+
+            /* Transitions */
+            --transition-fast: 150ms ease;
+            --transition-base: 250ms ease;
+            --transition-slow: 400ms cubic-bezier(0.4, 0, 0.2, 1);
+
+            /* Typography */
+            --font-sans: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+            --font-mono: 'JetBrains Mono', 'Fira Code', monospace;
+
+            /* Accent Colors (shared between themes) */
+            --accent-violet: #8b5cf6;
+            --accent-violet-light: #a78bfa;
+            --accent-cyan: #06b6d4;
+            --accent-pink: #f472b6;
+            --accent-amber: #f59e0b;
+            --accent-green: #10b981;
+            --accent-red: #ef4444;
+        }
+
+        [data-theme="dark"] {
+            --bg-base: #0d0d1a;
+            --bg-elevated: #12121f;
+            --bg-surface: #1a1a2e;
+            --bg-surface-hover: #252542;
+            --bg-glass: rgba(26, 26, 46, 0.7);
+            --bg-glass-hover: rgba(37, 37, 66, 0.8);
+
+            --text-primary: #ffffff;
+            --text-secondary: #e2e8f0;
+            --text-muted: #94a3b8;
+            --text-faint: #64748b;
+
+            --border-subtle: rgba(139, 92, 246, 0.15);
+            --border-default: rgba(139, 92, 246, 0.25);
+            --border-strong: rgba(139, 92, 246, 0.4);
+
+            --shadow-color: 139, 92, 246;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(var(--shadow-color), 0.1);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.4), 0 2px 6px rgba(var(--shadow-color), 0.15);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.5), 0 4px 12px rgba(var(--shadow-color), 0.2);
+            --shadow-glow: 0 0 30px rgba(var(--shadow-color), 0.3);
+
+            --gradient-aurora: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-cyan) 50%, var(--accent-pink) 100%);
+            --gradient-surface: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+        }
+
+        [data-theme="light"] {
+            --bg-base: #fafaf9;
+            --bg-elevated: #ffffff;
+            --bg-surface: #ffffff;
+            --bg-surface-hover: #f5f5f4;
+            --bg-glass: rgba(255, 255, 255, 0.8);
+            --bg-glass-hover: rgba(255, 255, 255, 0.95);
+
+            --text-primary: #1a1a2e;
+            --text-secondary: #374151;
+            --text-muted: #6b7280;
+            --text-faint: #9ca3af;
+
+            --border-subtle: rgba(139, 92, 246, 0.1);
+            --border-default: rgba(139, 92, 246, 0.2);
+            --border-strong: rgba(139, 92, 246, 0.35);
+
+            --shadow-color: 139, 92, 246;
+            --shadow-sm: 0 2px 8px rgba(0, 0, 0, 0.08), 0 1px 3px rgba(var(--shadow-color), 0.05);
+            --shadow-md: 0 4px 16px rgba(0, 0, 0, 0.1), 0 2px 6px rgba(var(--shadow-color), 0.08);
+            --shadow-lg: 0 8px 32px rgba(0, 0, 0, 0.12), 0 4px 12px rgba(var(--shadow-color), 0.1);
+            --shadow-glow: 0 0 30px rgba(var(--shadow-color), 0.15);
+
+            --gradient-aurora: linear-gradient(135deg, var(--accent-violet) 0%, var(--accent-cyan) 50%, var(--accent-pink) 100%);
+            --gradient-surface: linear-gradient(180deg, var(--bg-surface) 0%, var(--bg-elevated) 100%);
+        }
+
+        /* ============================================
+           RESET & BASE STYLES
+           ============================================ */
+        *, *::before, *::after {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            font-family: var(--font-sans);
+            font-size: 16px;
+            line-height: 1.6;
+            color: var(--text-primary);
+            background: var(--bg-base);
+            min-height: 100vh;
+            overflow-x: hidden;
+            transition: background-color var(--transition-slow), color var(--transition-slow);
+        }
+
+        /* Reduced motion preference */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                animation-iteration-count: 1 !important;
+                transition-duration: 0.01ms !important;
+            }
+            html {
+                scroll-behavior: auto;
+            }
+        }
+
+        /* ============================================
+           LOADING SCREEN
+           ============================================ */
+        .loading-screen {
+            position: fixed;
+            inset: 0;
+            z-index: 9999;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: var(--bg-base);
+            transition: opacity 0.6s ease, visibility 0.6s ease;
+        }
+
+        .loading-screen.hidden {
+            opacity: 0;
+            visibility: hidden;
+            pointer-events: none;
+        }
+
+        .loading-animation {
+            width: 200px;
+            height: 200px;
+            position: relative;
+        }
+
+        .loading-path {
+            fill: none;
+            stroke: var(--border-default);
+            stroke-width: 2;
+            stroke-linecap: round;
+        }
+
+        .loading-dot {
+            fill: var(--accent-violet);
+            filter: drop-shadow(0 0 8px var(--accent-violet));
+        }
+
+        .loading-pulse {
+            fill: none;
+            stroke: var(--accent-cyan);
+            stroke-width: 2;
+            opacity: 0;
+            animation: pulse-ring 2s ease-out infinite;
+        }
+
+        .loading-pulse:nth-child(2) { animation-delay: 0.5s; }
+        .loading-pulse:nth-child(3) { animation-delay: 1s; }
+
+        @keyframes pulse-ring {
+            0% { r: 5; opacity: 0.8; }
+            100% { r: 40; opacity: 0; }
+        }
+
+        .loading-destination {
+            fill: var(--accent-pink);
+            filter: drop-shadow(0 0 6px var(--accent-pink));
+        }
+
+        .loading-text {
+            margin-top: var(--space-lg);
+            font-size: 1rem;
+            color: var(--text-muted);
+            text-align: center;
+            min-height: 1.6em;
+        }
+
+        .dot-travel {
+            animation: travel-path 3s ease-in-out infinite;
+        }
+
+        @keyframes travel-path {
+            0%, 100% { offset-distance: 0%; }
+            50% { offset-distance: 100%; }
+        }
+
+        /* ============================================
+           SCROLL PROGRESS BAR
+           ============================================ */
+        .scroll-progress {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 3px;
+            z-index: 1000;
+            background: var(--border-subtle);
+        }
+
+        .scroll-progress-bar {
+            height: 100%;
+            width: 0%;
+            background: var(--gradient-aurora);
+            transition: width 50ms linear;
+        }
+
+        /* ============================================
+           BACKGROUND EFFECTS
+           ============================================ */
+        .bg-effects {
+            position: fixed;
+            inset: 0;
+            z-index: -1;
+            overflow: hidden;
+            pointer-events: none;
+        }
+
+        .bg-orb {
+            position: absolute;
+            border-radius: 50%;
+            filter: blur(80px);
+            opacity: 0.3;
+            animation: float-orb 20s ease-in-out infinite;
+        }
+
+        .bg-orb-1 {
+            width: 600px;
+            height: 600px;
+            background: var(--accent-violet);
+            top: -200px;
+            right: -200px;
+            animation-delay: 0s;
+        }
+
+        .bg-orb-2 {
+            width: 500px;
+            height: 500px;
+            background: var(--accent-cyan);
+            bottom: -150px;
+            left: -150px;
+            animation-delay: -7s;
+        }
+
+        .bg-orb-3 {
+            width: 400px;
+            height: 400px;
+            background: var(--accent-pink);
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            animation-delay: -14s;
+        }
+
+        @keyframes float-orb {
+            0%, 100% { transform: translate(0, 0) scale(1); }
+            25% { transform: translate(30px, -30px) scale(1.05); }
+            50% { transform: translate(-20px, 20px) scale(0.95); }
+            75% { transform: translate(-30px, -20px) scale(1.02); }
+        }
+
+        [data-theme="light"] .bg-orb {
+            opacity: 0.15;
+        }
+
+        /* ============================================
+           MAIN CONTENT WRAPPER
+           ============================================ */
+        .main-content {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: var(--space-lg);
+            opacity: 0;
+            transition: opacity 0.6s ease 0.3s;
+        }
+
+        .main-content.visible {
+            opacity: 1;
+        }
+
+        /* ============================================
+           HEADER & THEME TOGGLE
+           ============================================ */
+        .site-header {
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            padding: var(--space-md) 0;
+            margin-bottom: var(--space-xl);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header-left {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .search-wrapper {
+            position: relative;
+        }
+
+        .search-input {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-sm) var(--space-md);
+            padding-left: 40px;
+            color: var(--text-primary);
+            font-size: 0.875rem;
+            width: 250px;
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-base);
+        }
+
+        .search-input:focus {
+            outline: none;
+            border-color: var(--accent-violet);
+            box-shadow: var(--shadow-glow);
+            width: 300px;
+        }
+
+        .search-input::placeholder {
+            color: var(--text-faint);
+        }
+
+        .search-icon {
+            position: absolute;
+            left: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 18px;
+            height: 18px;
+            color: var(--text-muted);
+            pointer-events: none;
+        }
+
+        .theme-toggle {
+            background: var(--bg-glass);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-sm) var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            cursor: pointer;
+            color: var(--text-secondary);
+            font-size: 0.875rem;
+            font-weight: 500;
+            backdrop-filter: blur(10px);
+            transition: all var(--transition-base);
+        }
+
+        .theme-toggle:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--border-default);
+        }
+
+        .theme-toggle svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .theme-toggle .icon-sun { display: none; }
+        .theme-toggle .icon-moon { display: block; }
+
+        [data-theme="light"] .theme-toggle .icon-sun { display: block; }
+        [data-theme="light"] .theme-toggle .icon-moon { display: none; }
+
+        /* ============================================
+           HERO SECTION
+           ============================================ */
+        .hero {
+            text-align: center;
+            padding: var(--space-3xl) 0;
+            position: relative;
+        }
+
+        .hero-visual {
+            width: 100%;
+            max-width: 500px;
+            height: 200px;
+            margin: 0 auto var(--space-xl);
+        }
+
+        .hero-node {
+            fill: var(--bg-surface);
+            stroke: var(--accent-violet);
+            stroke-width: 2;
+            transition: all var(--transition-base);
+        }
+
+        .hero-node:hover {
+            fill: var(--bg-surface-hover);
+            filter: drop-shadow(0 0 10px var(--accent-violet));
+        }
+
+        .hero-connection {
+            stroke: var(--border-default);
+            stroke-width: 2;
+            stroke-dasharray: 8 4;
+            animation: dash-flow 1s linear infinite;
+        }
+
+        @keyframes dash-flow {
+            to { stroke-dashoffset: -12; }
+        }
+
+        .hero-icon {
+            fill: var(--accent-violet);
+        }
+
+        .hero-label {
+            fill: var(--text-muted);
+            font-size: 10px;
+            font-family: var(--font-sans);
+            text-anchor: middle;  /* Add this line */
+        }
+
+        .hero h1 {
+            font-size: clamp(2rem, 5vw, 3.5rem);
+            font-weight: 700;
+            margin-bottom: var(--space-md);
+            background: var(--gradient-aurora);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+        }
+
+        .hero-subtitle {
+            font-size: 1.25rem;
+            color: var(--text-muted);
+            max-width: 600px;
+            margin: 0 auto var(--space-xl);
+        }
+
+        .hero-meta {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-xl);
+            flex-wrap: wrap;
+        }
+
+        .meta-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .meta-item svg {
+            width: 16px;
+            height: 16px;
+            color: var(--accent-violet);
+        }
+
+        /* ============================================
+           KPI CARDS
+           ============================================ */
+        .kpi-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: var(--space-lg);
+            margin-bottom: var(--space-3xl);
+        }
+
+        .kpi-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            text-align: center;
+            transition: all var(--transition-base);
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .kpi-card.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .kpi-card:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--border-default);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .kpi-icon {
+            width: 40px;
+            height: 40px;
+            margin: 0 auto var(--space-md);
+            color: var(--accent-violet);
+        }
+
+        .kpi-card:nth-child(2) .kpi-icon { color: var(--accent-cyan); }
+        .kpi-card:nth-child(3) .kpi-icon { color: var(--accent-pink); }
+        .kpi-card:nth-child(4) .kpi-icon { color: var(--accent-amber); }
+
+        .kpi-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            font-family: var(--font-mono);
+        }
+
+        .kpi-label {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            margin-top: var(--space-xs);
+        }
+
+        /* ============================================
+           TAB NAVIGATION
+           ============================================ */
+        .tabs-wrapper {
+            position: sticky;
+            top: 60px;
+            z-index: 50;
+            background: var(--bg-glass);
+            backdrop-filter: blur(15px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            padding: var(--space-sm);
+            margin-bottom: var(--space-xl);
+            transition: all var(--transition-base);
+        }
+
+        .tabs-nav {
+            display: flex;
+            gap: var(--space-sm);
+            overflow-x: auto;
+            scrollbar-width: none;
+        }
+
+        .tabs-nav::-webkit-scrollbar {
+            display: none;
+        }
+
+        .tab-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+            padding: var(--space-sm) var(--space-lg);
+            background: transparent;
+            border: none;
+            border-radius: var(--radius-md);
+            color: var(--text-muted);
+            font-size: 0.9rem;
+            font-weight: 500;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: all var(--transition-base);
+        }
+
+        .tab-btn svg {
+            width: 18px;
+            height: 18px;
+        }
+
+        .tab-btn:hover {
+            color: var(--text-primary);
+            background: var(--bg-surface-hover);
+        }
+
+        .tab-btn.active {
+            color: var(--text-primary);
+            background: var(--accent-violet);
+        }
+
+        .tab-content {
+            display: none;
+            animation: fade-in 0.3s ease;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fade-in {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        /* ============================================
+           TABLE OF CONTENTS
+           ============================================ */
+        .toc-section {
+            margin-bottom: var(--space-3xl);
+        }
+
+        .toc-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: var(--space-md);
+        }
+
+        .toc-item {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-md) var(--space-lg);
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            color: var(--text-secondary);
+            text-decoration: none;
+            transition: all var(--transition-base);
+            opacity: 0;
+            transform: translateX(-20px);
+        }
+
+        .toc-item.animate-in {
+            opacity: 1;
+            transform: translateX(0);
+        }
+
+        .toc-item:hover {
+            background: var(--bg-glass-hover);
+            border-color: var(--accent-violet);
+            color: var(--text-primary);
+            transform: translateX(4px);
+        }
+
+        .toc-number {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 32px;
+            height: 32px;
+            background: var(--accent-violet);
+            border-radius: var(--radius-sm);
+            color: white;
+            font-size: 0.875rem;
+            font-weight: 600;
+            flex-shrink: 0;
+        }
+
+        .toc-item:nth-child(2) .toc-number { background: var(--accent-cyan); }
+        .toc-item:nth-child(3) .toc-number { background: var(--accent-pink); }
+        .toc-item:nth-child(4) .toc-number { background: var(--accent-amber); }
+        .toc-item:nth-child(5) .toc-number { background: var(--accent-green); }
+        .toc-item:nth-child(6) .toc-number { background: var(--accent-red); }
+        .toc-item:nth-child(7) .toc-number { background: var(--accent-violet); }
+
+        .toc-text {
+            font-weight: 500;
+        }
+
+        /* ============================================
+           PHASE CARDS (ACCORDION)
+           ============================================ */
+        .phases-container {
+            display: flex;
+            flex-direction: column;
+            gap: var(--space-lg);
+        }
+
+        .phase-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-xl);
+            overflow: hidden;
+            transition: all var(--transition-base);
+            opacity: 0;
+            transform: translateY(30px);
+        }
+
+        .phase-card.animate-in {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .phase-card:hover {
+            border-color: var(--border-default);
+        }
+
+        .phase-card.expanded {
+            box-shadow: var(--shadow-lg);
+        }
+
+        .phase-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            padding: var(--space-lg) var(--space-xl);
+            cursor: pointer;
+            transition: background var(--transition-base);
+        }
+
+        .phase-header:hover {
+            background: var(--bg-surface-hover);
+        }
+
+        .phase-icon {
+            width: 48px;
+            height: 48px;
+            padding: var(--space-sm);
+            background: var(--accent-violet);
+            border-radius: var(--radius-md);
+            color: white;
+            flex-shrink: 0;
+            transition: transform var(--transition-base);
+        }
+
+        .phase-card:nth-child(2) .phase-icon { background: var(--accent-cyan); }
+        .phase-card:nth-child(3) .phase-icon { background: var(--accent-pink); }
+        .phase-card:nth-child(4) .phase-icon { background: var(--accent-amber); }
+        .phase-card:nth-child(5) .phase-icon { background: var(--accent-green); }
+        .phase-card:nth-child(6) .phase-icon { background: var(--accent-red); }
+        .phase-card:nth-child(7) .phase-icon { background: var(--accent-violet); }
+
+        .phase-header:hover .phase-icon {
+            transform: scale(1.05);
+        }
+
+        .phase-info {
+            flex: 1;
+        }
+
+        .phase-title {
+            font-size: 1.25rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin-bottom: var(--space-xs);
+        }
+
+        .phase-summary {
+            font-size: 0.9rem;
+            color: var(--text-muted);
+        }
+
+        .phase-toggle {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+            transition: transform var(--transition-base);
+        }
+
+        .phase-card.expanded .phase-toggle {
+            transform: rotate(180deg);
+        }
+
+        .phase-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height var(--transition-slow);
+        }
+
+        .phase-card.expanded .phase-content {
+            max-height: 3000px;
+        }
+
+        .phase-body {
+            padding: 0 var(--space-xl) var(--space-xl);
+        }
+
+        .phase-body h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+            margin: var(--space-lg) 0 var(--space-md);
+            display: flex;
+            align-items: center;
+            gap: var(--space-sm);
+        }
+
+        .phase-body h4 svg {
+            width: 18px;
+            height: 18px;
+            color: var(--accent-violet);
+        }
+
+        .phase-body p {
+            color: var(--text-secondary);
+            margin-bottom: var(--space-md);
+            line-height: 1.7;
+        }
+
+        /* ============================================
+           TECH STACK BADGES
+           ============================================ */
+        .tech-stack {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-sm);
+            margin: var(--space-md) 0;
+        }
+
+        .tech-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-xs) var(--space-md);
+            background: var(--bg-surface);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            transition: all var(--transition-base);
+            cursor: default;
+            position: relative;
+        }
+
+        .tech-badge:hover {
+            border-color: var(--accent-violet);
+            transform: translateY(-2px);
+            box-shadow: var(--shadow-sm);
+        }
+
+        .tech-badge svg {
+            width: 16px;
+            height: 16px;
+        }
+
+        .tech-badge[data-tooltip]:hover::after {
+            content: attr(data-tooltip);
+            position: absolute;
+            bottom: calc(100% + 8px);
+            left: 50%;
+            transform: translateX(-50%);
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-default);
+            border-radius: var(--radius-sm);
+            font-size: 0.75rem;
+            color: var(--text-secondary);
+            white-space: nowrap;
+            z-index: 100;
+            box-shadow: var(--shadow-md);
+        }
+
+        /* ============================================
+           CODE BLOCKS
+           ============================================ */
+        .code-block {
+            position: relative;
+            margin: var(--space-md) 0;
+            background: var(--bg-elevated);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-md);
+            overflow: hidden;
+        }
+
+        .code-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: var(--space-sm) var(--space-md);
+            background: var(--bg-surface);
+            border-bottom: 1px solid var(--border-subtle);
+        }
+
+        .code-lang {
+            font-size: 0.75rem;
+            font-weight: 600;
+            color: var(--accent-violet);
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .copy-btn {
+            display: flex;
+            align-items: center;
+            gap: var(--space-xs);
+            padding: var(--space-xs) var(--space-sm);
+            background: transparent;
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-sm);
+            color: var(--text-muted);
+            font-size: 0.75rem;
+            cursor: pointer;
+            transition: all var(--transition-fast);
+        }
+
+        .copy-btn:hover {
+            border-color: var(--accent-violet);
+            color: var(--accent-violet);
+        }
+
+        .copy-btn.copied {
+            border-color: var(--accent-green);
+            color: var(--accent-green);
+        }
+
+        .copy-btn svg {
+            width: 14px;
+            height: 14px;
+        }
+
+        .code-block pre {
+            padding: var(--space-md);
+            overflow-x: auto;
+            font-family: var(--font-mono);
+            font-size: 0.85rem;
+            line-height: 1.6;
+            color: var(--text-secondary);
+        }
+
+        .code-block code {
+            font-family: inherit;
+        }
+
+        /* Syntax highlighting */
+        .token-keyword { color: var(--accent-violet); }
+        .token-string { color: var(--accent-green); }
+        .token-comment { color: var(--text-faint); font-style: italic; }
+        .token-function { color: var(--accent-cyan); }
+        .token-number { color: var(--accent-amber); }
+        .token-operator { color: var(--accent-pink); }
+
+        /* ============================================
+           TIMELINE (Horizontal)
+           ============================================ */
+        .timeline-container {
+            overflow-x: auto;
+            padding: var(--space-xl) 0;
+            margin: var(--space-lg) 0;
+        }
+
+        .timeline {
+            display: flex;
+            gap: 0;
+            min-width: max-content;
+            position: relative;
+            padding: var(--space-xl) var(--space-lg);
+        }
+
+        .timeline::before {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: var(--space-lg);
+            right: var(--space-lg);
+            height: 3px;
+            background: var(--gradient-aurora);
+            border-radius: 2px;
+            transform: translateY(-50%);
+        }
+
+        .timeline-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-width: 160px;
+            position: relative;
+            z-index: 1;
+        }
+
+        .timeline-marker {
+            width: 48px;
+            height: 48px;
+            background: var(--bg-surface);
+            border: 3px solid var(--accent-violet);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin-bottom: var(--space-md);
+            transition: all var(--transition-base);
+        }
+
+        .timeline-item:nth-child(2) .timeline-marker { border-color: var(--accent-cyan); }
+        .timeline-item:nth-child(3) .timeline-marker { border-color: var(--accent-pink); }
+        .timeline-item:nth-child(4) .timeline-marker { border-color: var(--accent-amber); }
+        .timeline-item:nth-child(5) .timeline-marker { border-color: var(--accent-green); }
+        .timeline-item:nth-child(6) .timeline-marker { border-color: var(--accent-red); }
+        .timeline-item:nth-child(7) .timeline-marker { border-color: var(--accent-violet); }
+
+        .timeline-marker svg {
+            width: 24px;
+            height: 24px;
+            color: var(--text-muted);
+        }
+
+        .timeline-item:hover .timeline-marker {
+            transform: scale(1.1);
+            box-shadow: var(--shadow-glow);
+        }
+
+        .timeline-label {
+            font-size: 0.8rem;
+            font-weight: 500;
+            color: var(--text-secondary);
+            text-align: center;
+            max-width: 140px;
+        }
+
+        /* ============================================
+           DATA PIPELINE FLOWCHART
+           ============================================ */
+        .pipeline-chart {
+            width: 100%;
+            max-width: 900px;
+            margin: var(--space-xl) auto;
+        }
+
+        .pipeline-node {
+            fill: var(--bg-surface);
+            stroke: var(--border-default);
+            stroke-width: 2;
+            transition: all var(--transition-base);
+        }
+
+        .pipeline-node:hover {
+            fill: var(--bg-surface-hover);
+            stroke: var(--accent-violet);
+            filter: drop-shadow(0 4px 12px rgba(139, 92, 246, 0.3));
+        }
+
+        .pipeline-arrow {
+            fill: none;
+            stroke: var(--accent-violet);
+            stroke-width: 2;
+            marker-end: url(#arrowhead);
+        }
+
+        .pipeline-text {
+            fill: var(--text-primary);
+            font-size: 12px;
+            font-family: var(--font-sans);
+            font-weight: 500;
+            text-anchor: middle;
+        }
+
+        .pipeline-subtext {
+            fill: var(--text-muted);
+            font-size: 10px;
+            font-family: var(--font-sans);
+            text-anchor: middle;
+        }
+
+        /* ============================================
+           TECH STACK TAB - GRID VIEW
+           ============================================ */
+        .tech-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+            gap: var(--space-lg);
+        }
+
+        .tech-card {
+            background: var(--bg-glass);
+            backdrop-filter: blur(10px);
+            border: 1px solid var(--border-subtle);
+            border-radius: var(--radius-lg);
+            padding: var(--space-lg);
+            transition: all var(--transition-base);
+            opacity: 0;
+            transform: scale(0.95);
+        }
+
+        .tech-card.animate-in {
+            opacity: 1;
+            transform: scale(1);
+        }
+
+        .tech-card:hover {
+            border-color: var(--accent-violet);
+            transform: translateY(-4px);
+            box-shadow: var(--shadow-lg);
+        }
+
+        .tech-card-header {
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+            margin-bottom: var(--space-md);
+        }
+
+        .tech-card-icon {
+            width: 40px;
+            height: 40px;
+            padding: var(--space-sm);
+            background: var(--bg-surface);
+            border-radius: var(--radius-md);
+            color: var(--accent-violet);
+        }
+
+        .tech-card-name {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .tech-card-desc {
+            font-size: 0.875rem;
+            color: var(--text-muted);
+            line-height: 1.6;
+        }
+
+        .tech-card-category {
+            display: inline-block;
+            margin-top: var(--space-md);
+            padding: var(--space-xs) var(--space-sm);
+            background: var(--accent-violet);
+            border-radius: var(--radius-sm);
+            font-size: 0.7rem;
+            font-weight: 600;
+            color: white;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        /* ============================================
+           ARCHITECTURE DIAGRAM
+           ============================================ */
+        .architecture-section {
+            margin: var(--space-2xl) 0;
+        }
+
+        .section-title {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            margin-bottom: var(--space-lg);
+            display: flex;
+            align-items: center;
+            gap: var(--space-md);
+        }
+
+        .section-title svg {
+            width: 28px;
+            height: 28px;
+            color: var(--accent-violet);
+        }
+
+        /* ============================================
+           FOOTER
+           ============================================ */
+        .site-footer {
+            margin-top: var(--space-3xl);
+            padding: var(--space-xl) 0;
+            border-top: 1px solid var(--border-subtle);
+            text-align: center;
+            color: var(--text-muted);
+            font-size: 0.875rem;
+        }
+
+        .footer-links {
+            display: flex;
+            justify-content: center;
+            gap: var(--space-lg);
+            margin-bottom: var(--space-md);
+        }
+
+        .footer-link {
+            color: var(--text-muted);
+            text-decoration: none;
+            transition: color var(--transition-fast);
+        }
+
+        .footer-link:hover {
+            color: var(--accent-violet);
+        }
+
+        /* ============================================
+           SEARCH HIGHLIGHT
+           ============================================ */
+        .search-highlight {
+            background: rgba(139, 92, 246, 0.3);
+            border-radius: 2px;
+            padding: 0 2px;
+        }
+
+        .search-no-match {
+            opacity: 0.3;
+            pointer-events: none;
+        }
+
+        /* ============================================
+           UTILITIES
+           ============================================ */
+        .sr-only {
+            position: absolute;
+            width: 1px;
+            height: 1px;
+            padding: 0;
+            margin: -1px;
+            overflow: hidden;
+            clip: rect(0, 0, 0, 0);
+            white-space: nowrap;
+            border: 0;
+        }
+
+        /* ============================================
+           RESPONSIVE DESIGN
+           ============================================ */
+        @media (max-width: 768px) {
+            .main-content {
+                padding: var(--space-md);
+            }
+
+            .site-header {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .search-input {
+                width: 100%;
+            }
+
+            .search-input:focus {
+                width: 100%;
+            }
+
+            .hero h1 {
+                font-size: 2rem;
+            }
+
+            .hero-meta {
+                flex-direction: column;
+                gap: var(--space-md);
+            }
+
+            .kpi-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .tabs-wrapper {
+                top: 0;
+            }
+
+            .tab-btn {
+                padding: var(--space-sm) var(--space-md);
+                font-size: 0.8rem;
+            }
+
+            .tab-btn span {
+                display: none;
+            }
+
+            .phase-header {
+                padding: var(--space-md);
+            }
+
+            .phase-body {
+                padding: 0 var(--space-md) var(--space-md);
+            }
+
+            .phase-icon {
+                width: 40px;
+                height: 40px;
+            }
+
+            .phase-title {
+                font-size: 1.1rem;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .kpi-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .toc-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Screen -->
+    <div class="loading-screen" id="loadingScreen">
+        <div class="loading-animation">
+            <svg viewBox="0 0 200 200">
+                <!-- Delivery path -->
+                <path class="loading-path" d="M 30 150 Q 60 100 100 100 T 170 50" id="deliveryPath"/>
+                
+                <!-- Pulse rings at destination -->
+                <circle class="loading-pulse" cx="170" cy="50" r="5"/>
+                <circle class="loading-pulse" cx="170" cy="50" r="5"/>
+                <circle class="loading-pulse" cx="170" cy="50" r="5"/>
+                
+                <!-- Start point -->
+                <circle cx="30" cy="150" r="8" fill="var(--accent-cyan)"/>
+                
+                <!-- Destination -->
+                <circle class="loading-destination" cx="170" cy="50" r="10"/>
+                
+                <!-- Traveling dot -->
+                <circle class="loading-dot dot-travel" r="6" style="offset-path: path('M 30 150 Q 60 100 100 100 T 170 50'); offset-rotate: 0deg;"/>
+            </svg>
+        </div>
+        <p class="loading-text" id="loadingText">Preparing your data feast...</p>
+    </div>
+
+    <!-- Scroll Progress -->
+    <div class="scroll-progress">
+        <div class="scroll-progress-bar" id="scrollProgress"></div>
+    </div>
+
+    <!-- Background Effects -->
+    <div class="bg-effects">
+        <div class="bg-orb bg-orb-1"></div>
+        <div class="bg-orb bg-orb-2"></div>
+        <div class="bg-orb bg-orb-3"></div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content" id="mainContent">
+        <!-- Header -->
+        <header class="site-header">
+            <div class="header-left">
+                <div class="search-wrapper">
+                    <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="11" cy="11" r="8"/>
+                        <path d="m21 21-4.35-4.35"/>
+                    </svg>
+                    <input type="text" class="search-input" id="searchInput" placeholder="Search documentation...">
+                </div>
+            </div>
+            <button class="theme-toggle" id="themeToggle" aria-label="Toggle theme">
+                <svg class="icon-moon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+                </svg>
+                <svg class="icon-sun" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="5"/>
+                    <line x1="12" y1="1" x2="12" y2="3"/>
+                    <line x1="12" y1="21" x2="12" y2="23"/>
+                    <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+                    <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+                    <line x1="1" y1="12" x2="3" y2="12"/>
+                    <line x1="21" y1="12" x2="23" y2="12"/>
+                    <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+                    <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+                </svg>
+                <span>Theme</span>
+            </button>
+        </header>
+
+        <!-- Hero Section -->
+        <section class="hero">
+            <svg class="hero-visual" viewBox="0 0 500 200">
+                <!-- Connections -->
+                <path class="hero-connection" d="M 80 100 L 170 100"/>
+                <path class="hero-connection" d="M 230 100 L 320 100"/>
+                <path class="hero-connection" d="M 380 100 L 450 100"/>
+                
+                <!-- Nodes -->
+                <rect class="hero-node" x="30" y="70" width="100" height="60" rx="12"/>
+                <rect class="hero-node" x="180" y="70" width="100" height="60" rx="12"/>
+                <rect class="hero-node" x="330" y="70" width="100" height="60" rx="12"/>
+                
+                <!-- Labels -->
+                <text class="hero-label" x="80" y="95">Raw Data</text>
+                <text class="hero-label" x="80" y="115">Hadoop/Hive</text>
+                <text class="hero-label" x="230" y="95">Processing</text>
+                <text class="hero-label" x="230" y="115">Python/Pandas</text>
+                <text class="hero-label" x="380" y="95">Insights</text>
+                <text class="hero-label" x="380" y="115">Visualization</text>
+            </svg>
+
+            <h1>Fast Food Delivery Analytics</h1>
+            <p class="hero-subtitle">A comprehensive big data analytics project analyzing food delivery patterns, optimizing routes, and building predictive models for delivery time estimation.</p>
+            
+            <div class="hero-meta">
+                <div class="meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+                        <circle cx="12" cy="7" r="4"/>
+                    </svg>
+                    <span>Big Data Engineering Project</span>
+                </div>
+                <div class="meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="3" y="4" width="18" height="18" rx="2" ry="2"/>
+                        <line x1="16" y1="2" x2="16" y2="6"/>
+                        <line x1="8" y1="2" x2="8" y2="6"/>
+                        <line x1="3" y1="10" x2="21" y2="10"/>
+                    </svg>
+                    <span>7-Phase Implementation</span>
+                </div>
+                <div class="meta-item">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polyline points="16 18 22 12 16 6"/>
+                        <polyline points="8 6 2 12 8 18"/>
+                    </svg>
+                    <span>Python, Hadoop, Hive, ML</span>
+                </div>
+            </div>
+        </section>
+
+        <!-- KPI Cards -->
+        <section class="kpi-grid" id="kpiGrid">
+            <div class="kpi-card">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                    <polyline points="14 2 14 8 20 8"/>
+                    <line x1="16" y1="13" x2="8" y2="13"/>
+                    <line x1="16" y1="17" x2="8" y2="17"/>
+                    <polyline points="10 9 9 9 8 9"/>
+                </svg>
+                <div class="kpi-value" data-target="1200">0</div>
+                <div class="kpi-label">Delivery Records</div>
+            </div>
+            <div class="kpi-card">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                    <polyline points="2 17 12 22 22 17"/>
+                    <polyline points="2 12 12 17 22 12"/>
+                </svg>
+                <div class="kpi-value" data-target="7">0</div>
+                <div class="kpi-label">Project Phases</div>
+            </div>
+            <div class="kpi-card">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="3" width="20" height="14" rx="2" ry="2"/>
+                    <line x1="8" y1="21" x2="16" y2="21"/>
+                    <line x1="12" y1="17" x2="12" y2="21"/>
+                </svg>
+                <div class="kpi-value" data-target="12">0</div>
+                <div class="kpi-label">Technologies Used</div>
+            </div>
+            <div class="kpi-card">
+                <svg class="kpi-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                <div class="kpi-value" data-target="92" data-suffix="%">0</div>
+                <div class="kpi-label">Model Accuracy</div>
+            </div>
+        </section>
+
+        <!-- Tab Navigation -->
+        <div class="tabs-wrapper">
+            <nav class="tabs-nav" role="tablist">
+                <button class="tab-btn active" data-tab="overview" role="tab" aria-selected="true">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                        <polyline points="14 2 14 8 20 8"/>
+                        <line x1="16" y1="13" x2="8" y2="13"/>
+                        <line x1="16" y1="17" x2="8" y2="17"/>
+                    </svg>
+                    <span>Overview</span>
+                </button>
+                <button class="tab-btn" data-tab="phases" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="3"/>
+                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                    </svg>
+                    <span>Phases</span>
+                </button>
+                <button class="tab-btn" data-tab="techstack" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                        <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                        <line x1="6" y1="6" x2="6.01" y2="6"/>
+                        <line x1="6" y1="18" x2="6.01" y2="18"/>
+                    </svg>
+                    <span>Tech Stack</span>
+                </button>
+                <button class="tab-btn" data-tab="timeline" role="tab" aria-selected="false">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="12" y1="20" x2="12" y2="10"/>
+                        <line x1="18" y1="20" x2="18" y2="4"/>
+                        <line x1="6" y1="20" x2="6" y2="16"/>
+                    </svg>
+                    <span>Timeline</span>
+                </button>
+            </nav>
+        </div>
+
+        <!-- Tab Content: Overview -->
+        <div class="tab-content active" id="tab-overview" role="tabpanel">
+            <section class="toc-section">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <line x1="8" y1="6" x2="21" y2="6"/>
+                        <line x1="8" y1="12" x2="21" y2="12"/>
+                        <line x1="8" y1="18" x2="21" y2="18"/>
+                        <line x1="3" y1="6" x2="3.01" y2="6"/>
+                        <line x1="3" y1="12" x2="3.01" y2="12"/>
+                        <line x1="3" y1="18" x2="3.01" y2="18"/>
+                    </svg>
+                    Project Phases
+                </h2>
+                <div class="toc-grid" id="tocGrid">
+                    <a href="#phase1" class="toc-item">
+                        <span class="toc-number">1</span>
+                        <span class="toc-text">Environment Setup & Configuration</span>
+                    </a>
+                    <a href="#phase2" class="toc-item">
+                        <span class="toc-number">2</span>
+                        <span class="toc-text">Data Generation & Ingestion</span>
+                    </a>
+                    <a href="#phase3" class="toc-item">
+                        <span class="toc-number">3</span>
+                        <span class="toc-text">Hive Data Warehousing</span>
+                    </a>
+                    <a href="#phase4" class="toc-item">
+                        <span class="toc-number">4</span>
+                        <span class="toc-text">Exploratory Data Analysis</span>
+                    </a>
+                    <a href="#phase5" class="toc-item">
+                        <span class="toc-number">5</span>
+                        <span class="toc-text">Advanced Analytics & Visualization</span>
+                    </a>
+                    <a href="#phase6" class="toc-item">
+                        <span class="toc-number">6</span>
+                        <span class="toc-text">Machine Learning Pipeline</span>
+                    </a>
+                    <a href="#phase7" class="toc-item">
+                        <span class="toc-number">7</span>
+                        <span class="toc-text">Documentation & Deployment</span>
+                    </a>
+                </div>
+            </section>
+
+            <!-- Architecture Section -->
+            <section class="architecture-section">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                        <polyline points="2 17 12 22 22 17"/>
+                        <polyline points="2 12 12 17 22 12"/>
+                    </svg>
+                    Data Pipeline Architecture
+                </h2>
+                <svg class="pipeline-chart" viewBox="0 0 900 280">
+                    <defs>
+                        <marker id="arrowhead" markerWidth="10" markerHeight="7" refX="9" refY="3.5" orient="auto">
+                            <polygon points="0 0, 10 3.5, 0 7" fill="var(--accent-violet)"/>
+                        </marker>
+                    </defs>
+                    
+                    <!-- Nodes -->
+                    <rect class="pipeline-node" x="20" y="100" width="130" height="80" rx="12"/>
+                    <rect class="pipeline-node" x="200" y="100" width="130" height="80" rx="12"/>
+                    <rect class="pipeline-node" x="380" y="100" width="130" height="80" rx="12"/>
+                    <rect class="pipeline-node" x="560" y="100" width="130" height="80" rx="12"/>
+                    <rect class="pipeline-node" x="740" y="100" width="130" height="80" rx="12"/>
+                    
+                    <!-- Arrows -->
+                    <path class="pipeline-arrow" d="M 150 140 L 195 140"/>
+                    <path class="pipeline-arrow" d="M 330 140 L 375 140"/>
+                    <path class="pipeline-arrow" d="M 510 140 L 555 140"/>
+                    <path class="pipeline-arrow" d="M 690 140 L 735 140"/>
+                    
+                    <!-- Labels -->
+                    <text class="pipeline-text" x="85" y="135">Data</text>
+                    <text class="pipeline-text" x="85" y="152">Generation</text>
+                    <text class="pipeline-subtext" x="85" y="170">Python/Faker</text>
+                    
+                    <text class="pipeline-text" x="265" y="135">HDFS</text>
+                    <text class="pipeline-text" x="265" y="152">Storage</text>
+                    <text class="pipeline-subtext" x="265" y="170">Hadoop</text>
+                    
+                    <text class="pipeline-text" x="445" y="135">Data</text>
+                    <text class="pipeline-text" x="445" y="152">Warehouse</text>
+                    <text class="pipeline-subtext" x="445" y="170">Hive</text>
+                    
+                    <text class="pipeline-text" x="625" y="135">Analysis &amp;</text>
+                    <text class="pipeline-text" x="625" y="152">ML Models</text>
+                    <text class="pipeline-subtext" x="625" y="170">Python/Sklearn</text>
+                    
+                    <text class="pipeline-text" x="805" y="135">Insights &amp;</text>
+                    <text class="pipeline-text" x="805" y="152">Visualization</text>
+                    <text class="pipeline-subtext" x="805" y="170">Matplotlib/Folium</text>
+                </svg>
+            </section>
+
+            <!-- Project Overview Content -->
+            <section class="architecture-section">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <circle cx="12" cy="12" r="10"/>
+                        <line x1="12" y1="16" x2="12" y2="12"/>
+                        <line x1="12" y1="8" x2="12.01" y2="8"/>
+                    </svg>
+                    Project Overview
+                </h2>
+                <div style="background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); border-radius: var(--radius-xl); padding: var(--space-xl);">
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-lg);">
+                        This project demonstrates a complete big data analytics pipeline for analyzing food delivery operations. Starting from synthetic data generation that mirrors real-world  delivery patterns, we progress through data ingestion into Hadoop HDFS, warehousing with Hive, exploratory analysis, advanced visualizations, and culminate in machine learning models for delivery time prediction.
+                    </p>
+                    <p style="color: var(--text-secondary); line-height: 1.8; margin-bottom: var(--space-lg);">
+                        The pipeline processes over 1,200 delivery records across the city, analyzing factors such as weather conditions, traffic patterns, delivery partner ratings, vehicle types, and order characteristics. Our predictive models achieve 92% accuracy in estimating delivery times, enabling operational optimization and improved customer experience.
+                    </p>Fast Food
+                    <h4 style="color: var(--text-primary); font-weight: 600; margin-bottom: var(--space-md); margin-top: var(--space-lg);">Key Objectives</h4>
+                    <p style="color: var(--text-secondary); line-height: 1.8;">
+                        The primary objectives include building a scalable data infrastructure using Hadoop ecosystem components, implementing efficient ETL processes for data transformation, conducting comprehensive exploratory data analysis to uncover delivery patterns, creating interactive visualizations including geospatial maps, and developing machine learning models for predictive analytics.
+                    </p>
+                </div>
+            </section>
+        </div>
+
+        <!-- Tab Content: Phases -->
+        <div class="tab-content" id="tab-phases" role="tabpanel">
+            <div class="phases-container" id="phasesContainer">
+                <!-- Phase 1 -->
+                <article class="phase-card" id="phase1">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 1: Environment Setup & Configuration</h3>
+                            <p class="phase-summary">Docker containers, Hadoop cluster, Python environment initialization</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Container orchestration platform">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M13.983 11.078h2.119a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.119a.185.185 0 00-.185.185v1.888c0 .102.083.185.185.185m-2.954-5.43h2.118a.186.186 0 00.186-.186V3.574a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.186m0 2.716h2.118a.187.187 0 00.186-.186V6.29a.186.186 0 00-.186-.185h-2.118a.185.185 0 00-.185.185v1.887c0 .102.082.185.185.186m-2.93 0h2.12a.186.186 0 00.184-.186V6.29a.185.185 0 00-.185-.185H8.1a.185.185 0 00-.185.185v1.887c0 .102.083.185.185.186m-2.964 0h2.119a.186.186 0 00.185-.186V6.29a.185.185 0 00-.185-.185H5.136a.186.186 0 00-.186.185v1.887c0 .102.084.185.186.186m5.893 2.715h2.118a.186.186 0 00.186-.185V9.006a.186.186 0 00-.186-.186h-2.118a.185.185 0 00-.185.185v1.888c0 .102.082.185.185.185m-2.93 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.185.185 0 00-.184.185v1.888c0 .102.083.185.185.185m-2.964 0h2.119a.185.185 0 00.185-.185V9.006a.185.185 0 00-.185-.186H5.136a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185m-2.92 0h2.12a.185.185 0 00.184-.185V9.006a.185.185 0 00-.184-.186h-2.12a.186.186 0 00-.186.186v1.887c0 .102.084.185.186.185M23.763 9.89c-.065-.051-.672-.51-1.954-.51-.338.001-.676.03-1.01.087-.248-1.7-1.653-2.53-1.716-2.566l-.344-.199-.226.327c-.284.438-.49.922-.612 1.43-.23.97-.09 1.882.403 2.661-.595.332-1.55.413-1.744.42H.751a.751.751 0 00-.75.748 11.376 11.376 0 00.692 4.062c.545 1.428 1.355 2.48 2.41 3.124 1.18.723 3.1 1.137 5.275 1.137.983.003 1.963-.086 2.93-.266a12.248 12.248 0 003.823-1.389c.98-.567 1.86-1.288 2.61-2.136 1.252-1.418 1.998-2.997 2.553-4.4h.221c1.372 0 2.215-.549 2.68-1.009.309-.293.55-.65.707-1.046l.098-.288z"/>
+                                    </svg>
+                                    Docker
+                                </span>
+                                <span class="tech-badge" data-tooltip="Distributed storage framework">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 0L3.6 4.8v9.6L12 19.2l8.4-4.8V4.8L12 0zm6.6 13.4L12 17.1l-6.6-3.7V7.5L12 3.8l6.6 3.7v5.9z"/>
+                                    </svg>
+                                    Hadoop
+                                </span>
+                                <span class="tech-badge" data-tooltip="Programming language">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M14.31.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.83l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.23l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05L0 11.97l.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.24l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05 1.07.13zm-6.3 1.98l-.23.33-.08.41.08.41.23.34.33.22.41.09.41-.09.33-.22.23-.34.08-.41-.08-.41-.23-.33-.33-.22-.41-.09-.41.09-.33.22zM21.1 6.11l.28.06.32.12.35.18.36.27.36.35.35.47.32.59.28.73.21.88.14 1.04.05 1.23-.06 1.23-.16 1.04-.24.86-.32.71-.36.57-.4.45-.42.33-.42.24-.4.16-.36.09-.32.05-.24.02-.16-.01h-8.22v.82h5.84l.01 2.76.02.36-.05.34-.11.31-.17.29-.25.25-.31.24-.38.2-.44.17-.51.15-.58.13-.64.09-.71.07-.77.04-.84.01-1.27-.04-1.07-.14-.9-.2-.73-.25-.59-.3-.45-.33-.34-.34-.25-.34-.16-.33-.1-.3-.04-.25-.02-.2.01-.13v-5.34l.05-.64.13-.54.21-.46.26-.38.3-.32.33-.24.35-.2.35-.14.33-.1.3-.06.26-.04.21-.02.13-.01h5.84l.69-.05.59-.14.5-.21.41-.28.33-.32.27-.35.2-.36.15-.36.1-.35.07-.32.04-.28.02-.21V6.07h2.09l.14.01.21.03zm-6.47 14.25l-.23.33-.08.41.08.41.23.33.33.23.41.08.41-.08.33-.23.23-.33.08-.41-.08-.41-.23-.33-.33-.23-.41-.08-.41.08-.33.23z"/>
+                                    </svg>
+                                    Python
+                                </span>
+                                <span class="tech-badge" data-tooltip="Command line interface">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polyline points="4 17 10 11 4 5"/>
+                                        <line x1="12" y1="19" x2="20" y2="19"/>
+                                    </svg>
+                                    Bash
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>The environment setup phase establishes the foundation for the entire project. We use Docker to create an isolated, reproducible environment that includes a Hadoop cluster with HDFS and YARN, along with Hive for data warehousing. The Python environment is configured with all necessary libraries for data processing, analysis, and machine learning.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">docker-compose.yml</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">version</span>: <span class="token-string">'3.8'</span>
+<span class="token-keyword">services</span>:
+  <span class="token-function">namenode</span>:
+    <span class="token-keyword">image</span>: <span class="token-string">bde2020/hadoop-namenode:2.0.0-hadoop3.2.1</span>
+    <span class="token-keyword">container_name</span>: <span class="token-string">namenode</span>
+    <span class="token-keyword">ports</span>:
+      - <span class="token-string">"9870:9870"</span>
+      - <span class="token-string">"9000:9000"</span>
+    <span class="token-keyword">environment</span>:
+      - <span class="token-string">CLUSTER_NAME=Fast Food-analytics</span>
+  
+  <span class="token-function">hive-server</span>:
+    <span class="token-keyword">image</span>: <span class="token-string">bde2020/hive:2.3.2-postgresql-metastore</span>
+    <span class="token-keyword">container_name</span>: <span class="token-string">hive-server</span>
+    <span class="token-keyword">ports</span>:
+      - <span class="token-string">"10000:10000"</span></code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>Upon completion, we have a fully functional distributed computing environment with Hadoop HDFS for storage, Hive for SQL-like querying, and a Python environment with pandas, numpy, scikit-learn, matplotlib, and other essential libraries pre-installed and configured.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 2 -->
+                <article class="phase-card" id="phase2">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                <polyline points="3.27 6.96 12 12.01 20.73 6.96"/>
+                                <line x1="12" y1="22.08" x2="12" y2="12"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 2: Data Generation & Ingestion</h3>
+                            <p class="phase-summary">Synthetic delivery data creation and HDFS storage</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Fake data generation library">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M14.31.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.83l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.23l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05L0 11.97l.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.24l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05 1.07.13z"/>
+                                    </svg>
+                                    Faker
+                                </span>
+                                <span class="tech-badge" data-tooltip="Data manipulation library">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M16.922 0H7.078a.631.631 0 00-.63.63v22.74c0 .348.282.63.63.63h9.844a.631.631 0 00.63-.63V.63a.631.631 0 00-.63-.63zM12 3.238a.794.794 0 110 1.588.794.794 0 010-1.588zm0 17.936a.794.794 0 110-1.588.794.794 0 010 1.588zm4.125-5.083H7.875V7.91h8.25v8.18z"/>
+                                    </svg>
+                                    Pandas
+                                </span>
+                                <span class="tech-badge" data-tooltip="Hadoop Distributed File System">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 0L3.6 4.8v9.6L12 19.2l8.4-4.8V4.8L12 0zm6.6 13.4L12 17.1l-6.6-3.7V7.5L12 3.8l6.6 3.7v5.9z"/>
+                                    </svg>
+                                    HDFS
+                                </span>
+                                <span class="tech-badge" data-tooltip="Numerical computing library">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M10.315 4.876L6.9 1.461 4.761 3.6l3.415 3.415zm8.17 0L21.9 1.461 19.761 3.6l-3.276 3.276zm-4.243 14.248L10.828 22.5l2.139-2.139 3.414-3.415zM4.876 13.685L1.461 17.1l2.139 2.139 3.415-3.415zm14.248-4.37L22.539 6.9l-2.139-2.139-3.415 3.415z"/>
+                                    </svg>
+                                    NumPy
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>We generate realistic delivery data that mimics actual Fast Food operations. The synthetic dataset includes delivery partner information, restaurant details, customer locations, order timestamps, weather conditions, traffic levels, and delivery outcomes. The data is designed to capture temporal patterns and geographical distribution across major Indian cities.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">from</span> faker <span class="token-keyword">import</span> Faker
+<span class="token-keyword">import</span> pandas <span class="token-keyword">as</span> pd
+<span class="token-keyword">import</span> numpy <span class="token-keyword">as</span> np
+
+<span class="token-function">def</span> <span class="token-function">generate_delivery_data</span>(n_records=<span class="token-number">150000</span>):
+    fake = Faker(<span class="token-string">'en_IN'</span>)
+    
+    cities = [<span class="token-string">'Mumbai'</span>, <span class="token-string">'Delhi'</span>, <span class="token-string">'Bangalore'</span>, <span class="token-string">'Chennai'</span>]
+    weather_conditions = [<span class="token-string">'Clear'</span>, <span class="token-string">'Rainy'</span>, <span class="token-string">'Cloudy'</span>, <span class="token-string">'Foggy'</span>]
+    vehicle_types = [<span class="token-string">'Bike'</span>, <span class="token-string">'Scooter'</span>, <span class="token-string">'Bicycle'</span>]
+    
+    data = {
+        <span class="token-string">'delivery_id'</span>: [fake.uuid4() <span class="token-keyword">for</span> _ <span class="token-keyword">in</span> range(n_records)],
+        <span class="token-string">'partner_rating'</span>: np.random.uniform(<span class="token-number">3.5</span>, <span class="token-number">5.0</span>, n_records),
+        <span class="token-string">'distance_km'</span>: np.random.exponential(<span class="token-number">5</span>, n_records),
+        <span class="token-string">'weather'</span>: np.random.choice(weather_conditions, n_records),
+        <span class="token-string">'city'</span>: np.random.choice(cities, n_records, p=[<span class="token-number">0.3</span>, <span class="token-number">0.25</span>, <span class="token-number">0.25</span>, <span class="token-number">0.2</span>])
+    }
+    
+    <span class="token-keyword">return</span> pd.DataFrame(data)</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>The phase produces 150,000+ delivery records stored in HDFS as CSV files, partitioned by city and date for efficient querying. The data includes 25+ features covering temporal, geographical, operational, and environmental dimensions.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 3 -->
+                <article class="phase-card" id="phase3">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 3v18"/>
+                                <rect x="4" y="8" width="6" height="8" rx="1"/>
+                                <rect x="14" y="4" width="6" height="16" rx="1"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 3: Hive Data Warehousing</h3>
+                            <p class="phase-summary">Schema design, table creation, and optimized queries</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Data warehouse on Hadoop">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm0 3a9 9 0 110 18 9 9 0 010-18z"/>
+                                    </svg>
+                                    Hive
+                                </span>
+                                <span class="tech-badge" data-tooltip="Python Hive connector">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M14.31.18l.9.2.73.26.59.3.45.32.34.34.25.34.16.33.1.3.04.26.02.2-.01.13V8.5l-.05.63-.13.55-.21.46-.26.38-.3.31-.33.25-.35.19-.35.14-.33.1-.3.07-.26.04-.21.02H8.83l-.69.05-.59.14-.5.22-.41.27-.33.32-.27.35-.2.36-.15.37-.1.35-.07.32-.04.27-.02.21v3.06H3.23l-.21-.03-.28-.07-.32-.12-.35-.18-.36-.26-.36-.36-.35-.46-.32-.59-.28-.73-.21-.88-.14-1.05L0 11.97l.06-1.22.16-1.04.24-.87.32-.71.36-.57.4-.44.42-.33.42-.24.4-.16.36-.1.32-.05.24-.01h.16l.06.01h8.16v-.83H6.24l-.01-2.75-.02-.37.05-.34.11-.31.17-.28.25-.26.31-.23.38-.2.44-.18.51-.15.58-.12.64-.1.71-.06.77-.04.84-.02 1.27.05 1.07.13z"/>
+                                    </svg>
+                                    PyHive
+                                </span>
+                                <span class="tech-badge" data-tooltip="Structured Query Language">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                        <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                        <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                                    </svg>
+                                    HiveQL
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>This phase focuses on creating a well-structured data warehouse in Hive. We design schemas for fact and dimension tables, implement partitioning strategies for query optimization, and create views for common analytical queries. The ORC file format is used for efficient storage and fast query performance.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">HiveQL</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">CREATE EXTERNAL TABLE</span> deliveries (
+    delivery_id <span class="token-function">STRING</span>,
+    partner_id <span class="token-function">STRING</span>,
+    restaurant_id <span class="token-function">STRING</span>,
+    customer_lat <span class="token-function">DOUBLE</span>,
+    customer_lon <span class="token-function">DOUBLE</span>,
+    distance_km <span class="token-function">DOUBLE</span>,
+    delivery_time_mins <span class="token-function">INT</span>,
+    weather <span class="token-function">STRING</span>,
+    traffic_level <span class="token-function">STRING</span>
+)
+<span class="token-keyword">PARTITIONED BY</span> (city <span class="token-function">STRING</span>, order_date <span class="token-function">DATE</span>)
+<span class="token-keyword">STORED AS</span> ORC
+<span class="token-keyword">LOCATION</span> <span class="token-string">'/user/hive/warehouse/Fast Food/deliveries'</span>;</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>A fully functional Hive data warehouse with partitioned tables, optimized for analytical queries. Query performance is improved by 10x through partitioning and ORC columnar storage. Pre-built views simplify common reporting needs.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 4 -->
+                <article class="phase-card" id="phase4">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                                <line x1="11" y1="8" x2="11" y2="14"/>
+                                <line x1="8" y1="11" x2="14" y2="11"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 4: Exploratory Data Analysis</h3>
+                            <p class="phase-summary">Statistical analysis, pattern discovery, and insights extraction</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Data manipulation and analysis">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M16.922 0H7.078a.631.631 0 00-.63.63v22.74c0 .348.282.63.63.63h9.844a.631.631 0 00.63-.63V.63a.631.631 0 00-.63-.63z"/>
+                                    </svg>
+                                    Pandas
+                                </span>
+                                <span class="tech-badge" data-tooltip="Static visualization library">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <line x1="18" y1="20" x2="18" y2="10"/>
+                                        <line x1="12" y1="20" x2="12" y2="4"/>
+                                        <line x1="6" y1="20" x2="6" y2="14"/>
+                                    </svg>
+                                    Matplotlib
+                                </span>
+                                <span class="tech-badge" data-tooltip="Statistical visualization">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21.21 15.89A10 10 0 1 1 8 2.83"/>
+                                        <path d="M22 12A10 10 0 0 0 12 2v10z"/>
+                                    </svg>
+                                    Seaborn
+                                </span>
+                                <span class="tech-badge" data-tooltip="Statistical computing">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M10.315 4.876L6.9 1.461 4.761 3.6l3.415 3.415zm8.17 0L21.9 1.461 19.761 3.6l-3.276 3.276z"/>
+                                    </svg>
+                                    SciPy
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>Comprehensive exploratory analysis is performed to understand delivery patterns, identify correlations, and discover anomalies. We analyze temporal trends such as hourly, daily, and weekly patterns, geographical distribution of deliveries, and the impact of weather and traffic on delivery times. Statistical tests validate hypotheses about delivery performance factors.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">import</span> pandas <span class="token-keyword">as</span> pd
+<span class="token-keyword">import</span> seaborn <span class="token-keyword">as</span> sns
+<span class="token-keyword">import</span> matplotlib.pyplot <span class="token-keyword">as</span> plt
+
+<span class="token-comment"># Analyze delivery time distribution by weather</span>
+fig, ax = plt.subplots(figsize=(<span class="token-number">12</span>, <span class="token-number">6</span>))
+sns.boxplot(
+    data=df, 
+    x=<span class="token-string">'weather'</span>, 
+    y=<span class="token-string">'delivery_time_mins'</span>,
+    palette=<span class="token-string">'viridis'</span>
+)
+ax.set_title(<span class="token-string">'Delivery Time Distribution by Weather Condition'</span>)
+ax.set_xlabel(<span class="token-string">'Weather'</span>)
+ax.set_ylabel(<span class="token-string">'Delivery Time (minutes)'</span>)
+
+<span class="token-comment"># Calculate correlation matrix</span>
+correlation_matrix = df[[
+    <span class="token-string">'distance_km'</span>, <span class="token-string">'delivery_time_mins'</span>, 
+    <span class="token-string">'partner_rating'</span>, <span class="token-string">'traffic_density'</span>
+]].corr()
+
+sns.heatmap(correlation_matrix, annot=<span class="token-keyword">True</span>, cmap=<span class="token-string">'coolwarm'</span>)</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>Comprehensive EDA report with insights on delivery patterns. Key findings include peak delivery hours between 12-2 PM and 7-9 PM, rainy weather increases average delivery time by 23%, and delivery partner rating shows strong negative correlation with delivery time.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 5 -->
+                <article class="phase-card" id="phase5">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 5: Advanced Analytics & Visualization</h3>
+                            <p class="phase-summary">Interactive dashboards and geospatial mapping</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Interactive visualization library">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    </svg>
+                                    Plotly
+                                </span>
+                                <span class="tech-badge" data-tooltip="Geospatial mapping library">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                                        <circle cx="12" cy="10" r="3"/>
+                                    </svg>
+                                    Folium
+                                </span>
+                                <span class="tech-badge" data-tooltip="Geospatial data processing">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <polygon points="1 6 1 22 8 18 16 22 23 18 23 2 16 6 8 2 1 6"/>
+                                        <line x1="8" y1="2" x2="8" y2="18"/>
+                                        <line x1="16" y1="6" x2="16" y2="22"/>
+                                    </svg>
+                                    GeoPandas
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>This phase creates rich, interactive visualizations and geospatial maps. We build interactive dashboards with Plotly showing real-time KPIs, delivery heatmaps using Folium overlaying delivery density on city maps, and animated time-series visualizations showing delivery patterns throughout the day.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">import</span> folium
+<span class="token-keyword">from</span> folium.plugins <span class="token-keyword">import</span> HeatMap
+
+<span class="token-comment"># Create delivery heatmap for Mumbai</span>
+mumbai_map = folium.Map(
+    location=[<span class="token-number">19.0760</span>, <span class="token-number">72.8777</span>],
+    zoom_start=<span class="token-number">11</span>,
+    tiles=<span class="token-string">'CartoDB dark_matter'</span>
+)
+
+<span class="token-comment"># Add heatmap layer</span>
+heat_data = df_mumbai[[<span class="token-string">'customer_lat'</span>, <span class="token-string">'customer_lon'</span>]].values.tolist()
+HeatMap(
+    heat_data,
+    radius=<span class="token-number">15</span>,
+    gradient={<span class="token-number">0.4</span>: <span class="token-string">'blue'</span>, <span class="token-number">0.65</span>: <span class="token-string">'lime'</span>, <span class="token-number">1</span>: <span class="token-string">'red'</span>}
+).add_to(mumbai_map)
+
+mumbai_map.save(<span class="token-string">'delivery_heatmap_mumbai.html'</span>)</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>Interactive Plotly dashboards with drill-down capabilities, geospatial heatmaps for all four cities showing delivery hotspots, animated visualizations demonstrating temporal delivery patterns, and exportable HTML reports for stakeholder sharing.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 6 -->
+                <article class="phase-card" id="phase6">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.57-3.25 3.92L12 22l-.75-12.08A4.001 4.001 0 0 1 12 2z"/>
+                                <circle cx="12" cy="6" r="2"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 6: Machine Learning Pipeline</h3>
+                            <p class="phase-summary">Predictive models for delivery time estimation</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                                                        <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="Machine learning library">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-1 17.93c-3.95-.49-7-3.85-7-7.93 0-.62.08-1.21.21-1.79L9 15v1c0 1.1.9 2 2 2v1.93zm6.9-2.54c-.26-.81-1-1.39-1.9-1.39h-1v-3c0-.55-.45-1-1-1H8v-2h2c.55 0 1-.45 1-1V7h2c1.1 0 2-.9 2-2v-.41c2.93 1.19 5 4.06 5 7.41 0 2.08-.8 3.97-2.1 5.39z"/>
+                                    </svg>
+                                    Scikit-learn
+                                </span>
+                                <span class="tech-badge" data-tooltip="Gradient boosting framework">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                    XGBoost
+                                </span>
+                                <span class="tech-badge" data-tooltip="Hyperparameter optimization">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <circle cx="12" cy="12" r="3"/>
+                                        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                                    </svg>
+                                    Optuna
+                                </span>
+                                <span class="tech-badge" data-tooltip="Model serialization">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                                    </svg>
+                                    Joblib
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>We build a complete machine learning pipeline for predicting delivery times. The pipeline includes feature engineering to create meaningful predictors, model training with multiple algorithms including Random Forest, Gradient Boosting, and XGBoost, hyperparameter tuning using Optuna for optimal performance, and model evaluation with cross-validation.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">from</span> sklearn.pipeline <span class="token-keyword">import</span> Pipeline
+<span class="token-keyword">from</span> sklearn.preprocessing <span class="token-keyword">import</span> StandardScaler, OneHotEncoder
+<span class="token-keyword">from</span> sklearn.compose <span class="token-keyword">import</span> ColumnTransformer
+<span class="token-keyword">from</span> xgboost <span class="token-keyword">import</span> XGBRegressor
+<span class="token-keyword">from</span> sklearn.model_selection <span class="token-keyword">import</span> cross_val_score
+
+<span class="token-comment"># Define feature preprocessing</span>
+numeric_features = [<span class="token-string">'distance_km'</span>, <span class="token-string">'partner_rating'</span>, <span class="token-string">'restaurant_rating'</span>]
+categorical_features = [<span class="token-string">'weather'</span>, <span class="token-string">'traffic_level'</span>, <span class="token-string">'vehicle_type'</span>, <span class="token-string">'city'</span>]
+
+preprocessor = ColumnTransformer([
+    (<span class="token-string">'num'</span>, StandardScaler(), numeric_features),
+    (<span class="token-string">'cat'</span>, OneHotEncoder(handle_unknown=<span class="token-string">'ignore'</span>), categorical_features)
+])
+
+<span class="token-comment"># Build the ML pipeline</span>
+ml_pipeline = Pipeline([
+    (<span class="token-string">'preprocessor'</span>, preprocessor),
+    (<span class="token-string">'regressor'</span>, XGBRegressor(
+        n_estimators=<span class="token-number">200</span>,
+        max_depth=<span class="token-number">8</span>,
+        learning_rate=<span class="token-number">0.1</span>,
+        random_state=<span class="token-number">42</span>
+    ))
+])
+
+<span class="token-comment"># Train and evaluate</span>
+scores = cross_val_score(ml_pipeline, X, y, cv=<span class="token-number">5</span>, scoring=<span class="token-string">'r2'</span>)
+<span class="token-keyword">print</span>(f<span class="token-string">"Cross-validation R² Score: {scores.mean():.3f} (+/- {scores.std()*2:.3f})"</span>)</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>XGBoost model achieving 92% R² score on test data with MAE of 3.2 minutes. Feature importance analysis reveals distance, traffic level, and weather as top predictors. Model is serialized for production deployment.</p>
+                        </div>
+                    </div>
+                </article>
+
+                <!-- Phase 7 -->
+                <article class="phase-card" id="phase7">
+                    <div class="phase-header" onclick="togglePhase(this)">
+                        <div class="phase-icon">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                                <line x1="16" y1="13" x2="8" y2="13"/>
+                                <line x1="16" y1="17" x2="8" y2="17"/>
+                                <polyline points="10 9 9 9 8 9"/>
+                            </svg>
+                        </div>
+                        <div class="phase-info">
+                            <h3 class="phase-title">Phase 7: Documentation & Deployment</h3>
+                            <p class="phase-summary">Final reports, API deployment, and project handover</p>
+                        </div>
+                        <svg class="phase-toggle" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="6 9 12 15 18 9"/>
+                        </svg>
+                    </div>
+                    <div class="phase-content">
+                        <div class="phase-body">
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M12 2L2 7l10 5 10-5-10-5z"/>
+                                    <path d="M2 17l10 5 10-5"/>
+                                    <path d="M2 12l10 5 10-5"/>
+                                </svg>
+                                Technologies Used
+                            </h4>
+                            <div class="tech-stack">
+                                <span class="tech-badge" data-tooltip="REST API framework">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                                    </svg>
+                                    FastAPI
+                                </span>
+                                <span class="tech-badge" data-tooltip="Static site generator">
+                                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                        <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                                        <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                                    </svg>
+                                    MkDocs
+                                </span>
+                                <span class="tech-badge" data-tooltip="Version control">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                                    </svg>
+                                    Git
+                                </span>
+                                <span class="tech-badge" data-tooltip="CI/CD platform">
+                                    <svg viewBox="0 0 24 24" fill="currentColor" width="16" height="16">
+                                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0 0 24 12c0-6.63-5.37-12-12-12z"/>
+                                    </svg>
+                                    GitHub Actions
+                                </span>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z"/>
+                                </svg>
+                                Implementation Details
+                            </h4>
+                            <p>The final phase packages everything for production use. We create comprehensive documentation using MkDocs, deploy the ML model as a REST API with FastAPI, set up CI/CD pipelines with GitHub Actions, and prepare the project repository with clear instructions for reproduction and extension.</p>
+
+                            <div class="code-block">
+                                <div class="code-header">
+                                    <span class="code-lang">Python</span>
+                                    <button class="copy-btn" onclick="copyCode(this)">
+                                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                            <rect x="9" y="9" width="13" height="13" rx="2" ry="2"/>
+                                            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                                        </svg>
+                                        <span>Copy</span>
+                                    </button>
+                                </div>
+                                <pre><code><span class="token-keyword">from</span> fastapi <span class="token-keyword">import</span> FastAPI
+<span class="token-keyword">from</span> pydantic <span class="token-keyword">import</span> BaseModel
+<span class="token-keyword">import</span> joblib
+
+app = FastAPI(title=<span class="token-string">"Fast Food Delivery Time Predictor"</span>)
+
+<span class="token-comment"># Load trained model</span>
+model = joblib.load(<span class="token-string">'models/delivery_time_model.pkl'</span>)
+
+<span class="token-keyword">class</span> <span class="token-function">DeliveryRequest</span>(BaseModel):
+    distance_km: <span class="token-function">float</span>
+    weather: <span class="token-function">str</span>
+    traffic_level: <span class="token-function">str</span>
+    partner_rating: <span class="token-function">float</span>
+    vehicle_type: <span class="token-function">str</span>
+    city: <span class="token-function">str</span>
+
+<span class="token-keyword">@app.post</span>(<span class="token-string">"/predict"</span>)
+<span class="token-keyword">async def</span> <span class="token-function">predict_delivery_time</span>(request: DeliveryRequest):
+    features = prepare_features(request)
+    prediction = model.predict(features)[<span class="token-number">0</span>]
+    <span class="token-keyword">return</span> {
+        <span class="token-string">"estimated_time_mins"</span>: round(prediction, <span class="token-number">1</span>),
+        <span class="token-string">"confidence"</span>: <span class="token-string">"high"</span>
+    }</code></pre>
+                            </div>
+
+                            <h4>
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                    <polyline points="9 11 12 14 22 4"/>
+                                    <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
+                                </svg>
+                                Key Outcomes
+                            </h4>
+                            <p>Production-ready REST API with sub-100ms response times, comprehensive MkDocs documentation site, automated CI/CD pipeline for model updates, and a well-organized GitHub repository with reproducible setup instructions.</p>
+                        </div>
+                    </div>
+                </article>
+            </div>
+        </div>
+
+        <!-- Tab Content: Tech Stack -->
+        <div class="tab-content" id="tab-techstack" role="tabpanel">
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <rect x="2" y="2" width="20" height="8" rx="2" ry="2"/>
+                    <rect x="2" y="14" width="20" height="8" rx="2" ry="2"/>
+                    <line x1="6" y1="6" x2="6.01" y2="6"/>
+                    <line x1="6" y1="18" x2="6.01" y2="18"/>
+                </svg>
+                Technology Stack
+            </h2>
+            <div class="tech-grid" id="techGrid">
+                <!-- Data Storage -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polygon points="12 2 2 7 12 12 22 7 12 2"/>
+                            <polyline points="2 17 12 22 22 17"/>
+                            <polyline points="2 12 12 17 22 12"/>
+                        </svg>
+                        <span class="tech-card-name">Hadoop HDFS</span>
+                    </div>
+                    <p class="tech-card-desc">Distributed file system for storing large-scale delivery data with fault tolerance and high throughput access patterns.</p>
+                    <span class="tech-card-category">Storage</span>
+                </div>
+
+                <!-- Data Warehouse -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                            <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                            <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                        </svg>
+                        <span class="tech-card-name">Apache Hive</span>
+                    </div>
+                    <p class="tech-card-desc">Data warehouse infrastructure providing SQL-like querying capabilities over Hadoop data with ORC columnar storage.</p>
+                    <span class="tech-card-category">Warehouse</span>
+                </div>
+
+                <!-- Programming -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <polyline points="16 18 22 12 16 6"/>
+                            <polyline points="8 6 2 12 8 18"/>
+                        </svg>
+                        <span class="tech-card-name">Python</span>
+                    </div>
+                    <p class="tech-card-desc">Primary programming language for data processing, analysis, visualization, and machine learning model development.</p>
+                    <span class="tech-card-category">Language</span>
+                </div>
+
+                <!-- Data Processing -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+                            <line x1="3" y1="9" x2="21" y2="9"/>
+                            <line x1="9" y1="21" x2="9" y2="9"/>
+                        </svg>
+                        <span class="tech-card-name">Pandas</span>
+                    </div>
+                    <p class="tech-card-desc">High-performance data manipulation library for cleaning, transforming, and analyzing structured delivery datasets.</p>
+                    <span class="tech-card-category">Processing</span>
+                </div>
+
+                <!-- Machine Learning -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <circle cx="12" cy="12" r="10"/>
+                            <path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/>
+                            <line x1="12" y1="17" x2="12.01" y2="17"/>
+                        </svg>
+                        <span class="tech-card-name">Scikit-learn</span>
+                    </div>
+                    <p class="tech-card-desc">Machine learning library providing efficient tools for predictive modeling, preprocessing, and model evaluation.</p>
+                    <span class="tech-card-category">ML</span>
+                </div>
+
+                <!-- Gradient Boosting -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M13 2L3 14h9l-1 8 10-12h-9l1-8z"/>
+                        </svg>
+                        <span class="tech-card-name">XGBoost</span>
+                    </div>
+                    <p class="tech-card-desc">Optimized gradient boosting framework delivering high accuracy for delivery time prediction with feature importance analysis.</p>
+                    <span class="tech-card-category">ML</span>
+                </div>
+
+                <!-- Visualization -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <line x1="18" y1="20" x2="18" y2="10"/>
+                            <line x1="12" y1="20" x2="12" y2="4"/>
+                            <line x1="6" y1="20" x2="6" y2="14"/>
+                        </svg>
+                        <span class="tech-card-name">Matplotlib & Seaborn</span>
+                    </div>
+                    <p class="tech-card-desc">Statistical visualization libraries for creating publication-quality charts, distributions, and correlation analyses.</p>
+                    <span class="tech-card-category">Visualization</span>
+                </div>
+
+                <!-- Interactive Viz -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                        </svg>
+                        <span class="tech-card-name">Plotly</span>
+                    </div>
+                    <p class="tech-card-desc">Interactive graphing library enabling drill-down dashboards, animated visualizations, and web-ready exports.</p>
+                    <span class="tech-card-category">Visualization</span>
+                </div>
+
+                <!-- Geospatial -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/>
+                            <circle cx="12" cy="10" r="3"/>
+                        </svg>
+                        <span class="tech-card-name">Folium</span>
+                    </div>
+                    <p class="tech-card-desc">Python library for creating interactive maps with heatmaps, markers, and geospatial delivery pattern visualization.</p>
+                    <span class="tech-card-category">Geospatial</span>
+                </div>
+
+                <!-- Containerization -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <rect x="2" y="7" width="20" height="14" rx="2" ry="2"/>
+                            <path d="M16 21V5a2 2 0 0 0-2-2h-4a2 2 0 0 0-2 2v16"/>
+                        </svg>
+                        <span class="tech-card-name">Docker</span>
+                    </div>
+                    <p class="tech-card-desc">Container platform for creating reproducible, isolated environments with Hadoop, Hive, and all project dependencies.</p>
+                    <span class="tech-card-category">DevOps</span>
+                </div>
+
+                <!-- API Framework -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/>
+                            <polyline points="22,6 12,13 2,6"/>
+                        </svg>
+                        <span class="tech-card-name">FastAPI</span>
+                    </div>
+                    <p class="tech-card-desc">Modern, high-performance API framework for deploying the delivery time prediction model as a REST service.</p>
+                    <span class="tech-card-category">API</span>
+                </div>
+
+                <!-- Documentation -->
+                <div class="tech-card">
+                    <div class="tech-card-header">
+                        <svg class="tech-card-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                            <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/>
+                            <path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
+                        </svg>
+                        <span class="tech-card-name">MkDocs</span>
+                    </div>
+                    <p class="tech-card-desc">Static site generator for creating beautiful project documentation with markdown support and theme customization.</p>
+                    <span class="tech-card-category">Docs</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Tab Content: Timeline -->
+        <div class="tab-content" id="tab-timeline" role="tabpanel">
+            <h2 class="section-title">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                    <circle cx="12" cy="12" r="10"/>
+                    <polyline points="12 6 12 12 16 14"/>
+                </svg>
+                Project Timeline
+            </h2>
+            <div class="timeline-container">
+                <div class="timeline">
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="12" cy="12" r="3"/>
+                                <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 1-2<br/>Environment Setup</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M21 16V8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16z"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 3-4<br/>Data Generation</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <ellipse cx="12" cy="5" rx="9" ry="3"/>
+                                <path d="M21 12c0 1.66-4 3-9 3s-9-1.34-9-3"/>
+                                <path d="M3 5v14c0 1.66 4 3 9 3s9-1.34 9-3V5"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 5-6<br/>Hive Warehouse</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <circle cx="11" cy="11" r="8"/>
+                                <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 7-8<br/>EDA</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <line x1="18" y1="20" x2="18" y2="10"/>
+                                <line x1="12" y1="20" x2="12" y2="4"/>
+                                <line x1="6" y1="20" x2="6" y2="14"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 9-10<br/>Visualization</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M12 2a4 4 0 0 1 4 4c0 1.95-1.4 3.57-3.25 3.92L12 22l-.75-12.08A4.001 4.001 0 0 1 12 2z"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 11-12<br/>ML Pipeline</span>
+                    </div>
+                    <div class="timeline-item">
+                        <div class="timeline-marker">
+                            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/>
+                                <polyline points="14 2 14 8 20 8"/>
+                            </svg>
+                        </div>
+                        <span class="timeline-label">Week 13-14<br/>Documentation</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Project Stats -->
+            <div style="margin-top: var(--space-2xl);">
+                <h2 class="section-title">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                        <path d="M22 12h-4l-3 9L9 3l-3 9H2"/>
+                    </svg>
+                    Project Statistics
+                </h2>
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: var(--space-lg);">
+                    <div style="background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center;">
+                        <div style="font-size: 2.5rem; font-weight: 700; font-family: var(--font-mono); background: var(--gradient-aurora); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">14</div>
+                        <div style="color: var(--text-muted); margin-top: var(--space-sm);">Weeks Duration</div>
+                    </div>
+                    <div style="background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center;">
+                        <div style="font-size: 2.5rem; font-weight: 700; font-family: var(--font-mono); background: var(--gradient-aurora); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">25+</div>
+                        <div style="color: var(--text-muted); margin-top: var(--space-sm);">Data Features</div>
+                    </div>
+                    <div style="background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center;">
+                        <div style="font-size: 2.5rem; font-weight: 700; font-family: var(--font-mono); background: var(--gradient-aurora); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">1</div>
+                        <div style="color: var(--text-muted); margin-top: var(--space-sm);">Cities Analyzed</div>
+                    </div>
+                    <div style="background: var(--bg-glass); backdrop-filter: blur(10px); border: 1px solid var(--border-subtle); border-radius: var(--radius-lg); padding: var(--space-xl); text-align: center;">
+                        <div style="font-size: 2.5rem; font-weight: 700; font-family: var(--font-mono); background: var(--gradient-aurora); -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;">3.2</div>
+                        <div style="color: var(--text-muted); margin-top: var(--space-sm);">MAE (minutes)</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer class="site-footer">
+            <div class="footer-links">
+                <a href="#" class="footer-link">GitHub Repository</a>
+                <a href="#" class="footer-link">API Documentation</a>
+                <a href="#" class="footer-link">Live Demo</a>
+            </div>
+            <p>Fast Food Delivery Analytics Dashboard &copy; 2024 | Big Data Engineering Project</p>
+        </footer>
+    </div>
+
+    <script>
+        // ============================================
+        // LOADING SCREEN
+        // ============================================
+        const loadingTexts = [
+            "Preparing your data feast...",
+            "Optimizing delivery routes...",
+            "Analyzing traffic patterns...",
+            "Training ML models...",
+            "Almost there..."
+        ];
+
+        let textIndex = 0;
+        const loadingTextEl = document.getElementById('loadingText');
+
+        const textInterval = setInterval(() => {
+            textIndex = (textIndex + 1) % loadingTexts.length;
+            loadingTextEl.textContent = loadingTexts[textIndex];
+        }, 800);
+
+        window.addEventListener('load', () => {
+            setTimeout(() => {
+                clearInterval(textInterval);
+                document.getElementById('loadingScreen').classList.add('hidden');
+                document.getElementById('mainContent').classList.add('visible');
+                initAnimations();
+            }, 2000);
+        });
+
+        // ============================================
+        // SCROLL PROGRESS
+        // ============================================
+        window.addEventListener('scroll', () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('scrollProgress').style.width = scrolled + '%';
+        });
+
+        // ============================================
+        // THEME TOGGLE
+        // ============================================
+        const themeToggle = document.getElementById('themeToggle');
+        const html = document.documentElement;
+
+        // Check for saved theme preference
+        const savedTheme = localStorage.getItem('theme') || 'dark';
+        html.setAttribute('data-theme', savedTheme);
+
+        themeToggle.addEventListener('click', () => {
+            const currentTheme = html.getAttribute('data-theme');
+            const newTheme = currentTheme === 'dark' ? 'light' : 'dark';
+            html.setAttribute('data-theme', newTheme);
+            localStorage.setItem('theme', newTheme);
+        });
+
+        // ============================================
+        // TAB NAVIGATION
+        // ============================================
+        const tabBtns = document.querySelectorAll('.tab-btn');
+        const tabContents = document.querySelectorAll('.tab-content');
+
+        tabBtns.forEach(btn => {
+            btn.addEventListener('click', () => {
+                const tabId = btn.getAttribute('data-tab');
+
+                // Update buttons
+                tabBtns.forEach(b => {
+                    b.classList.remove('active');
+                    b.setAttribute('aria-selected', 'false');
+                });
+                btn.classList.add('active');
+                btn.setAttribute('aria-selected', 'true');
+
+                // Update content
+                tabContents.forEach(content => {
+                    content.classList.remove('active');
+                });
+                document.getElementById(`tab-${tabId}`).classList.add('active');
+
+                // Re-trigger animations for the new tab
+                setTimeout(() => initAnimations(), 100);
+            });
+        });
+
+        // ============================================
+        // ACCORDION (PHASE CARDS)
+        // ============================================
+        function togglePhase(header) {
+            const card = header.parentElement;
+            const wasExpanded = card.classList.contains('expanded');
+
+            // Close all other cards
+            document.querySelectorAll('.phase-card').forEach(c => {
+                c.classList.remove('expanded');
+            });
+
+            // Toggle current card
+            if (!wasExpanded) {
+                card.classList.add('expanded');
+            }
+        }
+
+        // ============================================
+        // COPY CODE FUNCTIONALITY
+        // ============================================
+        async function copyCode(button) {
+            const codeBlock = button.closest('.code-block');
+            const code = codeBlock.querySelector('code').textContent;
+
+            try {
+                await navigator.clipboard.writeText(code);
+                button.classList.add('copied');
+                button.querySelector('span').textContent = 'Copied!';
+
+                setTimeout(() => {
+                    button.classList.remove('copied');
+                    button.querySelector('span').textContent = 'Copy';
+                }, 2000);
+            } catch (err) {
+                console.error('Failed to copy:', err);
+            }
+        }
+
+        // ============================================
+        // SEARCH FUNCTIONALITY
+        // ============================================
+        const searchInput = document.getElementById('searchInput');
+        let searchTimeout;
+
+        searchInput.addEventListener('input', (e) => {
+            clearTimeout(searchTimeout);
+            searchTimeout = setTimeout(() => {
+                const query = e.target.value.toLowerCase().trim();
+                performSearch(query);
+            }, 300);
+        });
+
+        function performSearch(query) {
+            // Reset all highlights
+            document.querySelectorAll('.search-highlight').forEach(el => {
+                el.outerHTML = el.textContent;
+            });
+            document.querySelectorAll('.search-no-match').forEach(el => {
+                el.classList.remove('search-no-match');
+            });
+
+            if (!query) return;
+
+            // Search in phase cards
+            document.querySelectorAll('.phase-card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (!text.includes(query)) {
+                    card.classList.add('search-no-match');
+                }
+            });
+
+            // Search in tech cards
+            document.querySelectorAll('.tech-card').forEach(card => {
+                const text = card.textContent.toLowerCase();
+                if (!text.includes(query)) {
+                    card.classList.add('search-no-match');
+                }
+            });
+
+            // Search in TOC items
+            document.querySelectorAll('.toc-item').forEach(item => {
+                const text = item.textContent.toLowerCase();
+                if (!text.includes(query)) {
+                    item.classList.add('search-no-match');
+                }
+            });
+        }
+
+        // ============================================
+        // SCROLL ANIMATIONS (Intersection Observer)
+        // ============================================
+        function initAnimations() {
+            const observerOptions = {
+                root: null,
+                rootMargin: '0px',
+                threshold: 0.1
+            };
+
+            const observer = new IntersectionObserver((entries) => {
+                entries.forEach((entry, index) => {
+                    if (entry.isIntersecting) {
+                        setTimeout(() => {
+                            entry.target.classList.add('animate-in');
+                        }, index * 100);
+                        observer.unobserve(entry.target);
+                    }
+                });
+            }, observerOptions);
+
+            // Observe KPI cards
+            document.querySelectorAll('.kpi-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Observe TOC items
+            document.querySelectorAll('.toc-item').forEach(item => {
+                observer.observe(item);
+            });
+
+            // Observe phase cards
+            document.querySelectorAll('.phase-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Observe tech cards
+            document.querySelectorAll('.tech-card').forEach(card => {
+                observer.observe(card);
+            });
+
+            // Animate KPI counters
+            animateCounters();
+        }
+
+        // ============================================
+        // KPI COUNTER ANIMATION
+        // ============================================
+        function animateCounters() {
+            const counters = document.querySelectorAll('.kpi-value');
+
+            counters.forEach(counter => {
+                const target = parseInt(counter.getAttribute('data-target'));
+                const suffix = counter.getAttribute('data-suffix') || '';
+                const duration = 2000;
+                const steps = 60;
+                const increment = target / steps;
+                let current = 0;
+
+                const timer = setInterval(() => {
+                    current += increment;
+                    if (current >= target) {
+                        counter.textContent = target.toLocaleString() + suffix;
+                        clearInterval(timer);
+                    } else {
+                        counter.textContent = Math.floor(current).toLocaleString() + suffix;
+                    }
+                }, duration / steps);
+            });
+        }
+
+        // ============================================
+        // SMOOTH SCROLL FOR ANCHOR LINKS
+        // ============================================
+        document.querySelectorAll('a[href^="#"]').forEach(anchor => {
+            anchor.addEventListener('click', function(e) {
+                e.preventDefault();
+                const target = document.querySelector(this.getAttribute('href'));
+                if (target) {
+                    // Switch to phases tab if needed
+                    const phasesTab = document.querySelector('[data-tab="phases"]');
+                    if (this.getAttribute('href').startsWith('#phase')) {
+                        phasesTab.click();
+                        setTimeout(() => {
+                            target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                            // Expand the target phase
+                            target.classList.add('expanded');
+                        }, 300);
+                    } else {
+                        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                }
+            });
+        });
+
+        // ============================================
+        // KEYBOARD NAVIGATION
+        // ============================================
+        document.addEventListener('keydown', (e) => {
+            // Ctrl/Cmd + K to focus search
+            if ((e.ctrlKey || e.metaKey) && e.key === 'k') {
+                e.preventDefault();
+                searchInput.focus();
+            }
+
+            // Escape to clear search and close expanded cards
+            if (e.key === 'Escape') {
+                searchInput.value = '';
+                performSearch('');
+                searchInput.blur();
+                document.querySelectorAll('.phase-card.expanded').forEach(card => {
+                    card.classList.remove('expanded');
+                });
+            }
+
+            // Tab navigation with arrow keys
+            if (e.key === 'ArrowLeft' || e.key === 'ArrowRight') {
+                const activeTab = document.querySelector('.tab-btn.active');
+                const tabs = Array.from(document.querySelectorAll('.tab-btn'));
+                const currentIndex = tabs.indexOf(activeTab);
+
+                if (e.key === 'ArrowRight' && currentIndex < tabs.length - 1) {
+                    tabs[currentIndex + 1].click();
+                } else if (e.key === 'ArrowLeft' && currentIndex > 0) {
+                    tabs[currentIndex - 1].click();
+                }
+            }
+        });
+
+        // ============================================
+        // PREFERS REDUCED MOTION
+        // ============================================
+        const prefersReducedMotion = window.matchMedia('(prefers-reduced-motion: reduce)');
+        
+        if (prefersReducedMotion.matches) {
+            // Skip loading animation
+            document.getElementById('loadingScreen').classList.add('hidden');
+            document.getElementById('mainContent').classList.add('visible');
+            
+            // Make all items visible immediately
+            document.querySelectorAll('.kpi-card, .toc-item, .phase-card, .tech-card').forEach(el => {
+                el.classList.add('animate-in');
+            });
+        }
+    </script>
+</body>
+</html>
